@@ -1,4 +1,4 @@
 # CHANGEME: Set these variable to your liking
-title: Undermount AC for ESPHome
+title: Undermount AC control for ESPHome
 description: Install ESPHome configuration for your compatible Undermount AC controller
 theme: jekyll-theme-slate
