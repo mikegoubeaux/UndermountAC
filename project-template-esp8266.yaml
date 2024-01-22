@@ -1,3 +1,4 @@
+## written by https://github.com/mikegoubeaux
 # These substitutions allow the end user to override certain values
 substitutions:
   name: "project-template"
