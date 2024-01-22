@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    uses: mikegoubeaux/workflows/.github/workflows/publish.yml@main
+    uses: esphome/workflows/.github/workflows/publish.yml@main
     with:
       # CHANGEME: Set the filenames of your config files here:
       files: undermount-ac-esp32.yaml
