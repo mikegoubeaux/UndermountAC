@@ -1,0 +1,9 @@
+{
+  "chipFamily": "ESP32-S3",
+  "parts": [
+    {
+      "path": "undermount-ac-esp32/undermount-ac-esp32.bin",
+      "offset": 0
+    }
+  ]
+}
