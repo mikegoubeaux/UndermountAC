@@ -1,6 +1,6 @@
 ## written by https://github.com/mikegoubeaux for UndermountAC https://undermountac.com/pages/hass
 
-# These substitutions allow the end user to override certain values
+# If you want to change the friendly name of your controller, do so below
 substitutions:
   name: "undermount-ac"
   friendly_name: "Undermount AC"
