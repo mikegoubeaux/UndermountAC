@@ -1,6 +1,6 @@
 # About
 
-Add some information about your project here.
+Install ESPHome configuration on your [Undermount AC ESPHome-compatible Controller]([url](https://undermountac.com/pages/hass)).
 
 # Installation
 
