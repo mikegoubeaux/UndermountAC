@@ -1,0 +1,347 @@
+# These substitutions allow the end user to override certain values
+substitutions:
+  name: "UndermountAC"
+
+esphome:
+  name: "${name}"
+  # Automatically add the mac address to the name
+  # so you can use a single firmware for all devices
+  name_add_mac_suffix: false
+
+  # This will allow for (future) project identification,
+  # configuration and updates.
+  project:
+    name: mikeg.undermount-ac
+    version: "1.0"
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+# To be able to get logs from the device via serial and api.
+logger:
+
+# API is a requirement of the dashboard import.
+api:
+
+# OTA is required for Over-the-Air updating
+ota:
+
+# This should point to the public location of this yaml file.
+dashboard_import:
+  package_import_url: github://mikegoubeaux/UndermountAC/undermount-ac-esp32.yaml@main
+
+wifi:
+  # Set up a wifi access point using the device name above
+  ap:
+    password: "12345678"
+
+# In combination with the `ap` this allows the user
+# to provision wifi credentials to the device.
+captive_portal:
+
+##########################################################
+# Most projects should not remove anything from above here
+# and should just modify the name, project name/version 
+# and git url for the dashboard_import
+##########################################################
+
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Sets up the improv via serial client for Wi-Fi provisioning.
+# Handy if your device has a usb port for the user to add credentials when they first get it.
+improv_serial:
+
+# Satus LED
+light:
+  # ESPHome status LED - controls an output (to use onboard RGB LED)
+  - platform: status_led
+    name: "status led"
+    internal: true
+    output: statusoutput
+  
+  # ESP32-S3 onboard RGB LED
+  - platform: neopixelbus
+    variant: WS2812
+    pin: 48
+    num_leds: 1
+    name: "Status LED RGB"
+    internal: True
+    restore_mode: ALWAYS_OFF
+    id: statusledlight
+    icon: "mdi:led-outline"
+    effects:
+      - strobe:
+          name: "Not Connected"
+          colors:
+            - state: True
+              brightness: 50%
+              red: 100%
+              green: 0%
+              blue: 0%
+              duration: 1s
+            - state: False
+              duration: 1s
+      - pulse:
+          name: "Pulse"
+          update_interval: 2s
+          min_brightness: 40%
+          max_brightness: 60%
+      - pulse:
+          name: "Pulse Fast"
+          transition_length: 0.25s
+          update_interval: 0.5s
+          min_brightness: 40%
+          max_brightness: 60%
+
+# Update the Status Light
+script:
+  - id: status_light_update
+    then:
+      # CLIMATE OFF - ORANGE
+      - if:
+          condition:
+            lambda: 'return id(this_thermostat).mode == CLIMATE_MODE_OFF;'
+          then:
+            - light.turn_on:
+                id: statusledlight
+                red: 50%
+                green: 35%
+                blue: 0%
+                brightness: 30%
+                effect: "None"
+      # CLIMATE IDLE - FAINT BLUE
+      - if:
+          condition:
+            lambda: 'return id(this_thermostat).action == CLIMATE_ACTION_IDLE;'
+          then:
+            - light.turn_on: 
+                id: statusledlight
+                red: 0%
+                green: 0%
+                blue: 100%
+                brightness: 20%
+                effect: "None"
+      # CLIMATE COOLING (with or without compressor on High) - PULSING BLUE
+      - if:
+          condition:
+            lambda: 'return id(this_thermostat).action == CLIMATE_ACTION_COOLING;'
+          then:
+            - if:
+                condition:
+                  switch.is_on: compressor_speed_high
+                then:
+                  - light.turn_on: 
+                      id: statusledlight
+                      red: 0%
+                      green: 0%
+                      blue: 100%
+                      brightness: 40%
+                      effect: "Pulse Fast"
+                else:
+                  - light.turn_on: 
+                      id: statusledlight
+                      red: 0%
+                      green: 0%
+                      blue: 100%
+                      brightness: 40%
+                      effect: "Pulse"
+
+
+output:
+  # output to use ESPHome status_led with ESP32-S3 onboard addressable LED
+  - platform: template
+    id: statusoutput
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - light.turn_on: 
+                id: statusledlight
+                effect: "Not Connected"
+          else:
+            - light.turn_off: 
+                id: statusledlight
+  # Fan Blower PWM output
+  - platform: ledc
+    pin: 7
+    id: blower_pwm
+    power_supply: fan_voltage
+    # clamp fan values between 40% and 98% per UndermountAC
+    min_power: 0.40
+    max_power: 0.98
+    zero_means_zero: true # set fan all the way to 0 when off
+
+# output pin for fan voltage - is managed by the Fan PWM output
+power_supply:
+  - id: fan_voltage
+    pin: 20
+
+# i2c bus for onboard temp/humidity sensor
+i2c:
+  sda: GPIO21
+  scl: GPIO14
+  scan: true
+  id: bus_a
+
+sensor:
+  # OPTIONAL - import a Home Assistant temp sensor to use for the Climate
+  - platform: homeassistant
+    id: hass_temp_sensor
+    entity_id: sensor.inside_average_temp
+    unit_of_measurement: "°F"
+    filters:
+      - lambda: return (x-32) * 5/9; #convert to C - all temps seem to be dealt with in C in espHome
+  
+  # onboard SHT30 temp/humidity sensor
+  - platform: sht3xd
+    i2c_id: bus_a
+    id: onboard_temp_sensor
+    temperature:
+      name: "UndermountAC Temperature"
+    humidity:
+      name: "UndermountAC Humidity"
+    update_interval: 30s
+
+
+switch:
+  # compressor on/off
+  - platform: gpio
+    id: air_cond
+    pin: 19
+    internal: true
+
+  # compressor high speed on/off
+  - platform: gpio
+    pin: 9
+    name: Compressor High Speed
+    id: compressor_speed_high
+    inverted: false
+    internal: False
+    restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - script.execute: status_light_update
+    on_turn_off:
+      - script.execute: status_light_update
+
+fan:
+  - platform: speed
+    name: "AC Blower"
+    output: blower_pwm
+    id: blower_fan
+    # using a Speed Fan here so Climate Thermostat can set fan speeds
+    # if you set "internal" to "true", the fan is only used internally and will not be exposed to Home Assistant
+    # you may want it exposed to HA if you want more granular control of the fan speed 
+    # (for safety it is already clamped to UndermountAC recommended speeds in the Output)
+    internal: true
+
+climate:
+  - platform: thermostat
+    name: "Air Conditioning"
+    id: this_thermostat
+    sensor: hass_temp_sensor
+    # uncomment the line below (and comment the line above) to use use the onboard temp sensor instead of an imported home assistant temp sensor
+    # sensor: onboard_temp_sensor 
+    visual:
+      temperature_step: 1.0
+      min_temperature: 50 °F
+      max_temperature: 80 °F
+
+    # these are the recommended values from UndermountAC
+    min_cooling_off_time: 5s # should be no less than "2min"
+    min_cooling_run_time: 5s # should be no less than "2min" to avoid short cycling
+    min_idle_time: 5s # may not really be necessary in a cooling only thermostat and the above settings
+    
+    # actions for each thermostat state - manage the call for ac, compressor speed, and fan on/of
+    cool_action:
+      - switch.turn_on: air_cond
+      - delay: 20s
+      - fan.turn_on: blower_fan
+    idle_action:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      - delay: 10s # delay before turning fan off to push out any final cold air
+      - fan.turn_off: blower_fan
+    off_mode:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      - delay: 10s # delay before turning fan off to push out any final cold air
+      - fan.turn_off: blower_fan
+    
+    # turn the compressor to HIGH under these conditions:
+    max_cooling_run_time: 1min # when cooling has been running for this long - should probably be a much longer time https://esphome.io/guides/configuration-types#config-time
+    supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
+    supplemental_cooling_action:
+      - switch.turn_on: compressor_speed_high
+
+    # define presets here to use within HA
+    on_boot_restore_from: memory
+    # if no memory exists, will default to Standby preset
+    default_preset: Standby
+    preset:
+      - name: Home
+        default_target_temperature_high: 75 °F
+        fan_mode: AUTO
+        mode: cool
+      - name: Standby
+        default_target_temperature_high: 75 °F
+        fan_mode: AUTO
+        mode: "OFF"
+      - name: Sleep
+        default_target_temperature_high: 71 °F
+        fan_mode: low
+        mode: cool
+    
+    # fan modes are available in the Climate card in HA Frontend and can be called with "climate.set_fan_mode" in automations
+    # these speeds are mapped to the above clamped PWM output values so the fan will never go too low
+    min_fan_mode_switching_time: 5s # probably not needed - delays before changing fan speed
+    fan_mode_low_action:
+      - lambda: |-
+          auto call = id(blower_fan).make_call();
+          call.set_speed(1);
+          call.perform();
+          
+    fan_mode_medium_action:
+      - lambda: |-
+          auto call = id(blower_fan).make_call();
+          call.set_speed(50);
+          call.perform();
+
+    fan_mode_high_action:
+      - lambda: |-
+          auto call = id(blower_fan).make_call();
+          call.set_speed(100);
+          call.perform();
+
+    fan_mode_auto_action:
+      # placeholder action - as the fan is dealt with in the "on_state" block below
+      - logger.log: "Fan is in Auto"
+
+    # when any state change occurs on the Thermostat and the fan is in AUTO, set speed based on delta between target temp and current temp
+    on_state:
+      - lambda: |-
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_AUTO) {
+            if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +3 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(100);
+              call.perform();
+            }
+          else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
+            auto call = id(blower_fan).make_call();
+            call.set_speed(50);
+            call.perform();
+          }
+            else {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(1);
+              call.perform();          
+            }
+          }
+      - script.execute: status_light_update
