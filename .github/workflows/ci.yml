@@ -11,7 +11,6 @@ jobs:
       matrix:
         file:
           - undermount-ac-esp32.yaml
-          - project-template-esp8266.yaml
     steps:
       - name: Checkout source code
         uses: actions/checkout@v2
