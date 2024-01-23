@@ -61,7 +61,7 @@ Fast Pulsing Blue - Cooling with compressor on high
 Steady Orange - Cooling Off (System in Standby)
 ```
 
-## Compressor Speed
+## High Compressor Speed
 
 The compressor has a high speed that can be selectively engaged. In this configuration, the compressor is set to high under two conditions:
 
