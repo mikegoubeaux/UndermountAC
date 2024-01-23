@@ -1,4 +1,4 @@
 # CHANGEME: Set these variable to your liking
 title: Undermount AC for ESPHome
-description: Install the ESPHome configuration for your compatible Undermount AC controller on the supplied esp32
+description: Install a ready-made ESPHome configuration on your Undermount AC ESPHome HVAC Controller
 theme: jekyll-theme-slate
