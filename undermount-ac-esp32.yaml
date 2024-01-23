@@ -230,6 +230,18 @@ switch:
       - script.execute: status_light_update
     on_turn_off:
       - script.execute: status_light_update
+  
+  # output 2
+  - platform: gpio
+    pin: 46
+    id: output_2
+    name: Output 2
+
+  # output 3
+  - platform: gpio
+    pin: 18
+    id: output_3
+    name: Output 3
 
 fan:
   - platform: speed
@@ -255,9 +267,9 @@ climate:
       max_temperature: 80 °F
 
     # these are the recommended values from UndermountAC
-    min_cooling_off_time: 5s # should be no less than "2min"
-    min_cooling_run_time: 5s # should be no less than "2min" to avoid short cycling
-    min_idle_time: 5s # may not really be necessary in a cooling only thermostat and the above settings
+    min_cooling_off_time: 2min # should be no less than "2min"
+    min_cooling_run_time: 2min # should be no less than "2min" to avoid short cycling
+    min_idle_time: 2min # may not really be necessary in a cooling only thermostat and the above settings
     
     # actions for each thermostat state - manage the call for ac, compressor speed, and fan on/of
     cool_action:
@@ -276,7 +288,7 @@ climate:
       - fan.turn_off: blower_fan
     
     # turn the compressor to HIGH under these conditions:
-    max_cooling_run_time: 1min # when cooling has been running for this long - should probably be a much longer time https://esphome.io/guides/configuration-types#config-time
+    max_cooling_run_time: 30min # when cooling has been running for this long - should probably be a much longer time https://esphome.io/guides/configuration-types#config-time
     supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
     supplemental_cooling_action:
       - switch.turn_on: compressor_speed_high
