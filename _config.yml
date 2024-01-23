@@ -1,4 +1,4 @@
 # CHANGEME: Set these variable to your liking
 title: Undermount AC for ESPHome
 description: Install the ESPHome configuration for your compatible Undermount AC controller on the supplied esp32
-# theme: jekyll-theme-slate
+theme: jekyll-theme-slate
