@@ -34,8 +34,9 @@ You can use the button below to install the pre-built firmware directly to your 
 7. You should now see a newly discovered ESPHome device in Home Assistant under **Settings** -> **Devices & Services**.
 8. Click "Configure" and the device will be added to Home Assistant.
 9. Congrats! You should now have an Undermount AC Climate Component in Home Assistant that will control your Undermount AC hardware! If you want or need to make code changes, continue on to the following steps.
-10. In your ESPHome dashboard, you should eventually see the device with the option to "Adopt".
-11. Click "Adopt" - here you can rename the device. You will be prompted to install the new configuration. From here on out, you have full control of the YAML configuration of your Undermount AC ESPHome HVAC Controller.
+10. In your ESPHome dashboard, you should eventually see the device with the option to "Adopt" (may require a restart of Home Assistant).
+11. Click "Adopt" - here you can rename the device. You will be prompted to install the new configuration.
+12. From here on out, you have full control of the YAML configuration of your Undermount AC ESPHome HVAC Controller.
 
 # Hardware & Wiring
 
@@ -55,7 +56,7 @@ The most recent version of the V3 AC kits will require:
 
 Output 2 and 3 are free to be used for heat or other functions that require either a High or Low signal (jumper selectable).
 
-In ESPHome two switch entities are created and exposed to the Home Assistant frontend for Outputs 2 and 3. You can rename or remove those switches from the configuration if they are not needed.
+In ESPHome two switch entities are created and exposed to the Home Assistant frontend for Outputs 2 and 3. You can rename or remove those switches from either the Home Assistant frontend or the ESPHome YAML configuration if they are not needed.
 
 
 # Using this ESPHome configuration
