@@ -192,14 +192,6 @@ i2c:
   id: bus_a
 
 sensor:
-  # OPTIONAL - import a Home Assistant temp sensor to use for the Climate
-  - platform: homeassistant
-    id: hass_temp_sensor
-    entity_id: sensor.inside_average_temp
-    unit_of_measurement: "°F"
-    filters:
-      - lambda: return (x-32) * 5/9; #convert to C - all temps seem to be dealt with in C in espHome
-  
   # onboard SHT30 temp/humidity sensor
   - platform: sht3xd
     i2c_id: bus_a
@@ -258,9 +250,7 @@ climate:
   - platform: thermostat
     name: "Air Conditioning"
     id: this_thermostat
-    sensor: hass_temp_sensor
-    # uncomment the line below (and comment the line above) to use use the onboard temp sensor instead of an imported home assistant temp sensor
-    # sensor: onboard_temp_sensor 
+    sensor: onboard_temp_sensor 
     visual:
       temperature_step: 1.0
       min_temperature: 50 °F
