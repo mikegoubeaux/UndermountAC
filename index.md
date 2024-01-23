@@ -33,8 +33,9 @@ You can use the button below to install the pre-built firmware directly to your 
 6. **If you do not have ESPHome installed in Home Assistant, pause here and visit [this link](https://esphome.io/guides/getting_started_hassio) to set it up.**
 7. You should now see a newly discovered ESPHome device in Home Assistant under **Settings** -> **Devices & Services**.
 8. Click "Configure" and the device will be added to Home Assistant.
-9. In your ESPHome dashboard, you should eventually see the device with the option to "Adopt".
-10. Click "Adopt" - here you can rename the device. You will be prompted to install the new configuration. From here on out, you have full control of the YAML configuration of your Undermount AC ESPHome HVAC Controller.
+9. Congrats! You should now have an Undermount AC Climate Component in Home Assistant that will control your Undermount AC hardware! If you want or need to make code changes, continue on to the following steps.
+10. In your ESPHome dashboard, you should eventually see the device with the option to "Adopt".
+11. Click "Adopt" - here you can rename the device. You will be prompted to install the new configuration. From here on out, you have full control of the YAML configuration of your Undermount AC ESPHome HVAC Controller.
 
 # Hardware & Wiring
 
