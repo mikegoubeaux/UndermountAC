@@ -56,9 +56,10 @@ If you want or need to make changes to the configuration, refer to the [ESPHome 
 The onboard RGB LED of the esp32 is used as a status light and is visible through the case. These are the indicators:
 ```
 Flashing Red - not connected to Home Assistant
+Faint Blue - Idle (on but not currently cooling)
 Slow Pulsing Blue - Cooling
-Fast Pulsing Blue - Cooling with compressor on high
-Steady Orange - Cooling Off (System in Standby)
+Fast Pulsing Blue - Cooling - Compressor on high
+Steady Orange - Thermostat Off (System in Standby)
 ```
 
 ## High Compressor Speed
