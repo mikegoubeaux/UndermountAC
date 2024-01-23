@@ -7,6 +7,8 @@
 
 If you have purchased an [Undermount AC ESPhome HVAC Controller](https://undermountac.com/pages/hass), this page can be used to install a ready-made ESPHome configuration to allow control of your UndermountAC via Home Assistant.
 
+This firmware and guide assumes you have a Home Assistant instance running with the ESPHome add-on.
+
 **This is optional!** 
 
 Please feel free to develop your own ESPHome Climate configuration YAML for use with the Undermount AC ESPHome HVAC Controller. This is being provided to help you get started with a configuration that works.
@@ -17,21 +19,19 @@ You can use the button below to install the pre-built firmware directly to your 
 
 <esp-web-install-button manifest="./manifest.json"></esp-web-install-button>
 
-<script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
+<script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script><br><br>
 
-**Use the UART port on the device to connect to your computer**
+**Note: Use the UART port on the device to connect to your computer**
 
 ## Adding to Home Assistant
 
-After the firmware is installed on your device, use another device and look for an "undermount-ac" wifi access point. Connect to it using password: **12345678**, then choose the wifi network of your Home Assistant server and add your wifi credentials.
-
-The device will reboot and join your wifi network.
-
-You should now see a newly discovered ESPHome device in Home Assistnat under Settings -> Devices & Services.
-
-Click "Configure" and the device will be added to Home Assistant. A YAML configuration will also be added to your ESPHome integration. You can modify the code there.
-
-**If you do not have ESPHome installed in Home Assistant, please visit [this link](https://esphome.io/guides/getting_started_hassio).**
+1. After the firmware is installed on your device, use another device and look for an "undermount-ac" wifi access point.
+2. Connect to it using password: **12345678**
+3. A captive portal will load. Choose the wifi network of your Home Assistant server and add your wifi credentials.
+4. The device will reboot and join your wifi network.
+5. **If you do not have ESPHome installed in Home Assistant, pause here and visit [this link](https://esphome.io/guides/getting_started_hassio) to set it up.**
+6. You should now see a newly discovered ESPHome device in Home Assistant under **Settings** -> **Devices & Services**.
+7. Click "Configure" and the device will be added to Home Assistant. A YAML configuration will also be added to your ESPHome integration. You can modify the code there.
 
 # Hardware & Wiring
 
