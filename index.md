@@ -19,6 +19,20 @@ You can use the button below to install the pre-built firmware directly to your 
 
 <script type="module" src="https://unpkg.com/esp-web-tools@9/dist/web/install-button.js?module"></script>
 
+**Use the UART port on the device to connect to your computer**
+
+## Adding to Home Assistant
+
+After the firmware is installed on your device, use another device and look for an "undermount-ac" wifi access point. Connect to it using password: **12345678**, then choose the wifi network of your Home Assistant server and add your wifi credentials.
+
+The device will reboot and join your wifi network.
+
+You should now see a newly discovered ESPHome device in Home Assistnat under Settings -> Devices & Services.
+
+Click "Configure" and the device will be added to Home Assistant. A YAML configuration will also be added to your ESPHome integration. You can modify the code there.
+
+**If you do not have ESPHome installed in Home Assistant, please visit [this link](https://esphome.io/guides/getting_started_hassio).**
+
 # Hardware & Wiring
 
 The board developed by Undermount AC includes an esp32-S3-devkit-1. Pinouts for the outputs are at the bottom of the page for reference.
