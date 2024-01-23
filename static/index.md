@@ -85,20 +85,23 @@ Optionally, a Home Assistant temperature sensor can be [imported into ESPHome](h
 
 ## Fan
 
-By default the Fan entity is hidden from the Home Assistant frontend. It is recommended to simply use the the Climate Component which has preset fan speeds of Low, Medium, High, and Auto. Auto changes fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets.
+By default the Fan entity is hidden from the Home Assistant frontend. It is recommended to simply use the the Climate Component which has preset fan speeds of Low, Medium, High, and Auto. **Auto** chooses fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets.
 
-If you want to have granular control over the fan, change the configuration for the Fan component to be:
+If you want to have granular control over the fan, change the following configuration variable in the Fan component:
 ```
 internal: false
 ```
-This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% to protect your evaporator. See below for more information. 
+This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% to protect your evaporator. If your Fan mode is set to Auto, this will override manual control of the fan.
 
 ## Climate Presets
 
-There are two Climate presets provided with this configuration.
+There are three Climate presets provided with this configuration.
 
-- Home - target temp: 75 °F, Fan mode: auto
-- Sleep - target temp: 71 °F, Fan mode: low
+- Home - target temp: 75 °F, Fan mode: auto, Thermostat: Cool
+- Sleep - target temp: 71 °F, Fan mode: low, Thermostat: Cool
+- Standby - target temp: 75 °F, Fan mode: auto, Thermostat: Off
+
+If the HVAC Controller is restarted, state is restored from memory if possible. If no memory exists, the 'Standby' preset (off) is used.
 
 Presets can be added or modified in the configuration.
 
