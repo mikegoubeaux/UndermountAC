@@ -337,11 +337,16 @@ climate:
               call.set_speed(100);
               call.perform();
             }
-          else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
-            auto call = id(blower_fan).make_call();
-            call.set_speed(50);
-            call.perform();
-          }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(75);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(50);
+              call.perform();
+            }
             else {
               auto call = id(blower_fan).make_call();
               call.set_speed(1);
