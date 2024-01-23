@@ -250,7 +250,7 @@ climate:
   - platform: thermostat
     name: "Air Conditioning"
     id: this_thermostat
-    sensor: onboard_temp_sensor 
+    sensor: onboard_temp_sensor
     visual:
       temperature_step: 1.0
       min_temperature: 50 °F
