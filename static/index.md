@@ -25,13 +25,15 @@ The board developed by Undermount AC includes an esp32-S3-devkit-1. Pinouts for 
 
 The ESPHome HVAC Controller is a simple module with 6 independent outputs. Two outputs are Low (Ground) only, and four are Low/High configurable using a jumper. Our A/C system requires 4 of the 6 outputs which leaves two outputs available for the Heating side of your system (Solenoid, Heater control, etc).
 
+The onboard power supply can handle input of **10-31V DC**.
+
 The most recent version of the V3 AC kits will require:
-- Neg = Black Wire
-- Pos = Red Wire
-- Output 1, Set to High (+Supply Voltage) for the PWM blower = White Wire
-- Output 4, Set to Low (Ground) for 2nd Speed compressor relay = Green Wire
-- Output 5 = Low to supply voltage to blower fan = Brown Wire
-- Output 6 = Low to engage Cool Relay = Blue Wire
+- Neg = **Black Wire**
+- Pos = **Red Wire**
+- Output 1, Set to High (+Supply Voltage) for the PWM blower - **White Wire**
+- Output 4, Set to Low (Ground) for 2nd Speed compressor relay - **Green Wire**
+- Output 5 = Low to supply voltage to blower fan - **Brown Wire**
+- Output 6 = Low to engage Cool Relay - **Blue Wire**
 
 Output 2 and 3 are free to be used for heat or other functions that require either a High or Low signal (jumper selectable).
 
@@ -82,7 +84,7 @@ Optionally, a Home Assistant temperature sensor can be [imported into ESPHome](h
 
 ## Fan
 
-The Fan entity is hidden from the Home Assistant front end by default. It is recommended to simply use the the Climate Compoenet which has preset fan speeds of Low, Medium, High, and Auto. Auto changes fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets.
+By default the Fan entity is hidden from the Home Assistant frontend. It is recommended to simply use the the Climate Component which has preset fan speeds of Low, Medium, High, and Auto. Auto changes fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets.
 
 If you want to have granular control over the fan, change the configuration for the Fan component to be:
 ```
@@ -101,7 +103,7 @@ Presets can be added or modified in the configuration.
 
 # Disclaimer!
 
-Please **NOTE** that that short cycling the compressor can cause damage to the equipment. Additionally, a minimum fan speed should be maintained to protect the evaporator from freezing.
+Please **NOTE** that short cycling the compressor can cause damage to the equipment. Additionally, a minimum fan speed should be maintained to protect the evaporator from freezing.
 
 The provided ESPHome configuration has the following Climate Component safeguards in place:
 
@@ -110,7 +112,7 @@ The provided ESPHome configuration has the following Climate Component safeguard
 min_cooling_off_time: 2min
 min_cooling_run_time: 2min
 ```
-Both of these Climate Control configuration variables should be set to a minimum of 2 minutes.
+Both of these Climate Control configuration variables should be set to a minimum of 2 minutes to avoid short cycling.
 
 **Fan Speed Output**
 
