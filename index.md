@@ -1,6 +1,8 @@
 # About
 
-Install ESPHome configuration on your [Undermount AC ESPHome-compatible Controller]([url](https://undermountac.com/pages/hass)).
+If you have have an Undermount AC ESPhome / Home Assistant Controller, use this page to install a ready-made ESPHome configuration on your [Undermount AC ESPHome-compatible Controller]([url](https://undermountac.com/pages/hass)).
+
+A climate device will be added to Home Assistant for full control of your Undermount AC system.
 
 # Installation
 
