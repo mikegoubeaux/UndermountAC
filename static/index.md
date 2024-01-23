@@ -25,13 +25,16 @@ You can use the button below to install the pre-built firmware directly to your 
 
 ## Adding to Home Assistant
 
-1. After the firmware is installed on your device, use another device and look for an "undermount-ac" wifi access point.
-2. Connect to it using password: **12345678**
-3. A captive portal will load. Choose the wifi network of your Home Assistant server and add your wifi credentials.
-4. The device will reboot and join your wifi network.
-5. **If you do not have ESPHome installed in Home Assistant, pause here and visit [this link](https://esphome.io/guides/getting_started_hassio) to set it up.**
-6. You should now see a newly discovered ESPHome device in Home Assistant under **Settings** -> **Devices & Services**.
-7. Click "Configure" and the device will be added to Home Assistant. A YAML configuration will also be added to your ESPHome integration. You can modify the code there.
+1. After the firmware is installed on your device, the onboard RGB LED (on the esp32) should be blinking red.
+2. Use another device and look for an "undermount-ac" wifi access point.
+3. Connect to it using password: **12345678**
+4. A captive portal will load. Choose the wifi network of your Home Assistant server and add your wifi credentials.
+5. The device will reboot and join your wifi network.
+6. **If you do not have ESPHome installed in Home Assistant, pause here and visit [this link](https://esphome.io/guides/getting_started_hassio) to set it up.**
+7. You should now see a newly discovered ESPHome device in Home Assistant under **Settings** -> **Devices & Services**.
+8. Click "Configure" and the device will be added to Home Assistant.
+9. In your ESPHome dashboard, you should eventually see the device with the option to "Adopt".
+10. Click "Adopt" - here you can rename the device. You will be prompted to install the new configuration. From here on out, you have full control of the YAML configuration of your Undermount AC ESPHome HVAC Controller.
 
 # Hardware & Wiring
 
