@@ -49,14 +49,17 @@ The onboard power supply can handle input of **10-31V DC**.
 The most recent version of the V3 AC kits will require:
 - Neg = **Black Wire**
 - Pos = **Red Wire**
-- Output 1, Set to High (+Supply Voltage) for the PWM blower - **White Wire**
-- Output 4, Set to Low (Ground) for 2nd Speed compressor relay - **Green Wire**
-- Output 5 = Low to supply voltage to blower fan - **Brown Wire**
-- Output 6 = Low to engage Cool Relay - **Blue Wire**
+- Output 1 = Set to High (+Supply Voltage) for the PWM blower - **White Wire**
+- Output 2 = Low to supply voltage to blower fan - **Brown Wire**
+- Output 3 = Low to engage Cool Relay - **Blue Wire**
+- Output 4 = Set to Low (Ground) for 2nd Speed compressor relay - **Green Wire**
+- Output 5 = Unused (available for other uses)
+- Output 6 = Unused (available for other uses)
 
-Output 2 and 3 are free to be used for heat or other functions that require either a High or Low signal (jumper selectable).
 
-In ESPHome two switch entities are created and exposed to the Home Assistant frontend for Outputs 2 and 3. You can rename or remove those switches from either the Home Assistant frontend or the ESPHome YAML configuration if they are not needed.
+Outputs 5 and 6 are free to be used for heat or other functions that require either a High or Low signal (jumper selectable).
+
+In ESPHome two switch entities are created and exposed to the Home Assistant frontend for those outputs. You can rename or remove those switches from either the Home Assistant frontend or the ESPHome YAML configuration if they are not needed.
 
 
 # Using this ESPHome configuration
@@ -78,6 +81,7 @@ Flashing Red - not connected to Home Assistant
 Faint Blue - Idle (on but not currently cooling)
 Slow Pulsing Blue - Cooling
 Fast Pulsing Blue - Cooling - Compressor on high
+Slow Pulsing Cyan - Fan Only Mode
 Steady Orange - Thermostat Off (System in Standby)
 ```
 
