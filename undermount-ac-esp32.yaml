@@ -225,13 +225,14 @@ switch:
     id: air_cond
     pin: 8
     internal: true
+    inverted: true
 
   # compressor high speed on/off
   - platform: gpio
     pin: 10
     name: Compressor High Speed
     id: compressor_speed_high
-    inverted: false
+    inverted: true
     internal: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
