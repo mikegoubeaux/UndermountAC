@@ -156,9 +156,9 @@ SCL GPIO 14
 SDA GPIO 21
 RGB GPIO 48
 Output 1 = GPIO 7
-Output 2 = GPIO 46
-Output 3 = GPIO 18
-Output 4 = GPIO 09
+Output 2 = GPIO 9
+Output 3 = GPIO 8
+Output 4 = GPIO 10
 Output 5 = GPIO 20
 Output 6 = GPIO 19
 ```
