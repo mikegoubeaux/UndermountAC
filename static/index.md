@@ -57,17 +57,18 @@ The most recent version of the V3 AC kits will require:
 - Output 6 = Unused (available for other uses)
 
 
-Outputs 5 and 6 are free to be used for heat or other functions that require either a High or Low signal (jumper selectable).
+Outputs 5 and 6 are free to be used for heat or other functions.
 
 In ESPHome two switch entities are created and exposed to the Home Assistant frontend for those outputs. You can rename or remove those switches from either the Home Assistant frontend or the ESPHome YAML configuration if they are not needed.
 
 
 # Using this ESPHome configuration
 
-Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and adopted the device into your [ESPHome](https://esphome.io) integration on [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
+Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and clicked "Configure" on the newly discovered device in **Settings -> Devices & Services** in [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
 
 ![Screenshot 2024-02-05 at 9 57 34 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/16ae24cd-9ffa-4505-9cf9-c2d04e9b7c10)
 
+If you wish to make changes to the ESPHome YAML configuration, you will additionally need to "Adopt" the device into your [ESPHome dashboard](https://esphome.io/guides/getting_started_hassio.html) to take over control of the device firmware.
 
 # Configuration and Operation
 
