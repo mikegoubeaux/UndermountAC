@@ -49,10 +49,10 @@ The onboard power supply can handle input of **10-31V DC**.
 The most recent version of the V3 AC kits will require:
 - Neg = **Black Wire**
 - Pos = **Red Wire**
-- Output 1 = Set to High (+Supply Voltage) for the PWM blower - **White Wire**
-- Output 2 = Low to supply voltage to blower fan - **Brown Wire**
-- Output 3 = Low to engage Cool Relay - **Blue Wire**
-- Output 4 = Set to Low (Ground) for 2nd Speed compressor relay - **Green Wire**
+- Output 1 -  **White Wire** (jumper to High) - PWM Blower
+- Output 2 - **Brown Wire** (jumper to High) - Voltage to Blower Fan Relay
+- Output 3 - **Blue Wire** (jumper to High) - Engage Cool Relay
+- Output 4 - **Green Wire** (jumper to High) High Speed Compressor Relay
 - Output 5 = Unused (available for other uses)
 - Output 6 = Unused (available for other uses)
 
@@ -66,7 +66,7 @@ In ESPHome two switch entities are created and exposed to the Home Assistant fro
 
 Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and adopted the device into your [ESPHome](https://esphome.io) integration on [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
 
-![Screenshot 2024-01-22 at 4 49 48 PM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/8054f70b-17a0-45c2-9f98-bd88c766dda4)
+![Screenshot 2024-02-05 at 9 57 34 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/16ae24cd-9ffa-4505-9cf9-c2d04e9b7c10)
 
 
 # Configuration and Operation
@@ -118,7 +118,7 @@ This will provide a fan entity to the Home Assistant frontend for full control o
 
 ## Fan Only Mode
 
-The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in the Home Assistant frontend. This is currenlty configured to act as a manual fan control. You can choose Low, Medium, High and the fan will run at that speed regardless of the set point. However, if you choose Auto the controller will choose the fan speed based on the set point tempurature, but will not turn off. If your set point has been reached, the fan will stay at the lowest speed.
+The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in the Home Assistant frontend. This is currenlty configured to act as a manual fan control for ventilation. You can choose Low, Medium, High and the fan will run at that speed regardless of the set point. However, if you choose Auto the controller will choose the fan speed based on the set point tempurature, but will not turn off. If your set point has been reached, the fan will stay at the lowest speed.
 
 If you'd rather the fan be used as a cooling fan (at any speed) - activating only when the setpoint has not been reached - add this configuration variable to the Climate entity:
 ```
