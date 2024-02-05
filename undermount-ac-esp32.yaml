@@ -214,7 +214,7 @@ switch:
 
   # compressor high speed on/off
   - platform: gpio
-    pin: 9
+    pin: 10
     name: Compressor High Speed
     id: compressor_speed_high
     inverted: false
@@ -227,13 +227,13 @@ switch:
   
   # output 2
   - platform: gpio
-    pin: 46
+    pin: 9
     id: output_2
     name: Output 2
 
   # output 3
   - platform: gpio
-    pin: 18
+    pin: 8
     id: output_3
     name: Output 3
 
