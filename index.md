@@ -116,6 +116,15 @@ internal: false
 ```
 This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% to protect your evaporator. If your Fan mode is set to Auto, this will override manual control of the fan.
 
+## Fan Only Mode
+
+The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in the Home Assistant frontend. This is currenlty configured to act as a manual fan control. You can choose Low, Medium, High and the fan will run at that speed regardless of the set point. However, if you choose Auto the controller will choose the fan speed based on the set point tempurature, but will not turn off. If your set point has been reached, the fan will stay at the lowest speed.
+
+If you'd rather the fan be used as a cooling fan (at any speed) - activating only when the setpoint has not been reached - add this configuration variable to the Climate entity:
+```
+fan_only_cooling: true
+```
+
 ## Climate Presets
 
 There are three Climate presets provided with this configuration.
