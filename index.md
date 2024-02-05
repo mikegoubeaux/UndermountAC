@@ -3,7 +3,7 @@
 
 # About
 
-[Undermount AC](https://undermountac.com) has developed an ESPHome HVAC Controller for their air conditioning hardware. This ESPHome configuration was developed by [Mike Goubeaux](https://github.com/mikegoubeaux) in conjunction with Undermount AC. The ESPHome configuration is free and open source. Use at your own risk.
+[Undermount AC](https://undermountac.com) has developed an [ESPHome HVAC Controller](https://undermountac.com/pages/hass) for their [air conditioning hardware](https://undermountac.com). This ESPHome configuration was developed by [Mike Goubeaux](https://github.com/mikegoubeaux) in conjunction with Undermount AC. The ESPHome configuration is free and open source. Use at your own risk.
 
 If you have purchased an [Undermount AC ESPhome HVAC Controller](https://undermountac.com/pages/hass), this page can be used to install a ready-made ESPHome configuration to allow control of your UndermountAC via Home Assistant.
 
