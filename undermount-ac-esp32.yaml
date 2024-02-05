@@ -151,6 +151,18 @@ script:
                       blue: 100%
                       brightness: 40%
                       effect: "Pulse"
+      # CLIMATE FAN ONLY MODE - PULSING CYAN
+      - if:
+          condition:
+            lambda: 'return id(this_thermostat).mode == CLIMATE_MODE_FAN_ONLY;'
+          then:
+            - light.turn_on: 
+                id: statusledlight
+                red: 0%
+                green: 100%
+                blue: 100%
+                brightness: 40%
+                effect: "Pulse"  
 
 
 output:
@@ -182,7 +194,9 @@ output:
 # output pin for fan voltage - is managed by the Fan PWM output
 power_supply:
   - id: fan_voltage
-    pin: 20
+    pin:
+      number: 9
+      inverted: true
 
 # i2c bus for onboard temp/humidity sensor
 i2c:
@@ -209,7 +223,7 @@ switch:
   # compressor on/off
   - platform: gpio
     id: air_cond
-    pin: 19
+    pin: 8
     internal: true
 
   # compressor high speed on/off
@@ -225,17 +239,17 @@ switch:
     on_turn_off:
       - script.execute: status_light_update
   
-  # output 2
+  # output 5
   - platform: gpio
-    pin: 9
-    id: output_2
-    name: Output 2
+    pin: 20
+    id: output_5
+    name: Output 5
 
-  # output 3
+  # output 6
   - platform: gpio
-    pin: 8
-    id: output_3
-    name: Output 3
+    pin: 19
+    id: output_6
+    name: Output 6
 
 fan:
   - platform: speed
@@ -262,6 +276,8 @@ climate:
     min_cooling_off_time: 2min # should be no less than "2min"
     min_cooling_run_time: 2min # should be no less than "2min" to avoid short cycling
     min_idle_time: 2min # may not really be necessary in a cooling only thermostat and the above settings
+    min_fanning_off_time: 30s
+    min_fanning_run_time: 30s
     
     # actions for each thermostat state - manage the call for ac, compressor speed, and fan on/of
     cool_action:
@@ -273,6 +289,10 @@ climate:
       - switch.turn_off: compressor_speed_high
       - delay: 10s # delay before turning fan off to push out any final cold air
       - fan.turn_off: blower_fan
+    fan_only_action:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      - fan.turn_on: blower_fan
     off_mode:
       - switch.turn_off: air_cond
       - switch.turn_off: compressor_speed_high
@@ -280,7 +300,7 @@ climate:
       - fan.turn_off: blower_fan
     
     # turn the compressor to HIGH under these conditions:
-    max_cooling_run_time: 30min # when cooling has been running for this long - should probably be a much longer time https://esphome.io/guides/configuration-types#config-time
+    max_cooling_run_time: 30min # when cooling has been running for this long
     supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
     supplemental_cooling_action:
       - switch.turn_on: compressor_speed_high
