@@ -217,7 +217,24 @@ sensor:
       name: "UndermountAC Humidity"
       id: onboard_humidity
     update_interval: 30s
-
+  
+  # fan speed diagnostics sensor
+  - platform: template
+    id: fan_speed_diagnostic
+    name: Blower Speed
+    accuracy_decimals: 0
+    unit_of_measurement: "%"
+    device_class: ""
+    entity_category: "diagnostic"
+    icon: mdi:fan
+    filters:
+      # simulate clamped fan speed values 
+      - lambda: |-
+          if(id(blower_fan).state) {
+            return ((x * .01) * (id(blower_pwm).get_max_power() - id(blower_pwm).get_min_power()) + id(blower_pwm).get_min_power()) * 100;
+          } else {
+            return 0.0;
+          }
 
 switch:
   # compressor on/off
@@ -236,8 +253,12 @@ switch:
     internal: true
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
+      # set minimum fan speed to 60% when compressor is on high
+      - lambda: id(blower_pwm).set_min_power(0.60);
       - script.execute: status_light_update
     on_turn_off:
+      # set minimum fan speed to 40% when compressor is on low
+      - lambda: id(blower_pwm).set_min_power(0.40);
       - script.execute: status_light_update
   
   # output 5
@@ -262,6 +283,8 @@ fan:
     # you may want it exposed to HA if you want more granular control of the fan speed 
     # (for safety it is already clamped to UndermountAC recommended speeds in the Output)
     internal: true
+    on_turn_off:
+      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
 
 climate:
   - platform: thermostat
@@ -328,28 +351,22 @@ climate:
     # these speeds are mapped to the above clamped PWM output values so the fan will never go too low
     min_fan_mode_switching_time: 5s # probably not needed - delays before changing fan speed
     fan_mode_low_action:
-      - lambda: |-
-          auto call = id(blower_fan).make_call();
-          call.set_speed(1);
-          call.perform();
-          
+      # placeholder action - as the fan is dealt with in the "on_state" block below
+      - logger.log: "Fan is in Low"
+
     fan_mode_medium_action:
-      - lambda: |-
-          auto call = id(blower_fan).make_call();
-          call.set_speed(50);
-          call.perform();
+      # placeholder action - as the fan is dealt with in the "on_state" block below
+      - logger.log: "Fan is on Medium"
 
     fan_mode_high_action:
-      - lambda: |-
-          auto call = id(blower_fan).make_call();
-          call.set_speed(100);
-          call.perform();
+      # placeholder action - as the fan is dealt with in the "on_state" block below
+      - logger.log: "Fan is on High"
 
     fan_mode_auto_action:
       # placeholder action - as the fan is dealt with in the "on_state" block below
       - logger.log: "Fan is in Auto"
 
-    # when any state change occurs on the Thermostat and the fan is in AUTO, set speed based on delta between target temp and current temp
+    # when any state change occurs on the Thermostat, set fan speed
     on_state:
       - lambda: |-
           if (id(this_thermostat).fan_mode == CLIMATE_FAN_AUTO) {
@@ -358,20 +375,46 @@ climate:
               call.set_speed(100);
               call.perform();
             }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2.5 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(80);
+              call.perform();
+            }
             else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2 ) {
               auto call = id(blower_fan).make_call();
-              call.set_speed(75);
+              call.set_speed(60);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1.5 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(40);
               call.perform();
             }
             else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
               auto call = id(blower_fan).make_call();
-              call.set_speed(50);
+              call.set_speed(20);
               call.perform();
             }
             else {
               auto call = id(blower_fan).make_call();
-              call.set_speed(1);
+              call.set_speed(0);
               call.perform();          
             }
           }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_LOW){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(0);
+              call.perform();
+          }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_MEDIUM){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(50);
+              call.perform();
+          }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_HIGH){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(100);
+              call.perform();
+          }
       - script.execute: status_light_update
+      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
