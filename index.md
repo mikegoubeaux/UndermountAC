@@ -115,7 +115,7 @@ If you want to have granular control over the fan, change the following configur
 ```
 internal: false
 ```
-This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% to protect your evaporator. If your Fan mode is set to Auto, this will override manual control of the fan.
+This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% if the compressor is on low speed and 60-98% if the compressor is running at normal speed to protect your evaporator. If your Fan mode is set to Auto, this will override manual control of the fan.
 
 ## Fan Only Mode
 
