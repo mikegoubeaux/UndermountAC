@@ -236,6 +236,7 @@ sensor:
             return 0.0;
           }
 
+switch:
   # compressor on/off
   - platform: gpio
     id: air_cond
