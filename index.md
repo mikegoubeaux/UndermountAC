@@ -52,7 +52,7 @@ The most recent version of the V3 AC kits will require:
 - Output 1 -  **White Wire** (jumper to High) - PWM Blower
 - Output 2 - **Brown Wire** (jumper to High) - Voltage to Blower Fan Relay
 - Output 3 - **Blue Wire** (jumper to High) - Engage Cool Relay
-- Output 4 - **Green Wire** (jumper to High) High Speed Compressor Relay
+- Output 4 - **Green Wire** (jumper to High) - High Speed Compressor Relay
 - Output 5 = Unused (available for other uses)
 - Output 6 = Unused (available for other uses)
 
@@ -95,7 +95,7 @@ The compressor has a high speed that can be selectively engaged. In this configu
 - When the system has been cooling for over 30 minutes
 - When the delta between the target temp and current temp is greater than 5 °C
 
-The compressor speed is reset once the target temperature is reached or if the AC is turned off.
+The compressor speed is reset to low once the target temperature is reached or if the AC is turned off.
 
 These settings can be modified under the Climate Component:
 ```
@@ -174,9 +174,9 @@ This ESPHome configuration should work with all recent models of Undermount AC u
 
 However, for reference, the included esp32 pinouts are as follows:
 ```
-SCL GPIO 14
-SDA GPIO 21
-RGB GPIO 48
+SCL = GPIO 14
+SDA = GPIO 21
+RGB LED = GPIO 48
 Output 1 = GPIO 7
 Output 2 = GPIO 9
 Output 3 = GPIO 8
