@@ -276,6 +276,14 @@ switch:
     id: output_6
     name: Output 6
 
+  # supplemental cooling enabled - when off, this prevents the compressor from running on high
+  - platform: template
+    id: supplemental_enabled
+    name: Supplemental Cooling Enabled
+    icon: mdi:speedometer
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+
 fan:
   - platform: speed
     name: "AC Blower"
@@ -330,7 +338,11 @@ climate:
     max_cooling_run_time: 30min # when cooling has been running for this long
     supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
     supplemental_cooling_action:
-      - switch.turn_on: compressor_speed_high
+      - if:
+          condition:
+            - switch.is_on: supplemental_enabled
+          then:
+            - switch.turn_on: compressor_speed_high
 
     # define presets here to use within HA
     on_boot_restore_from: memory
