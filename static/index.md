@@ -67,6 +67,8 @@ In ESPHome two switch entities are created and exposed to the Home Assistant fro
 Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and clicked "Configure" on the newly discovered device in **Settings -> Devices & Services** in [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
 
 ![Screenshot 2024-02-05 at 9 57 34 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/16ae24cd-9ffa-4505-9cf9-c2d04e9b7c10)
+![Screenshot 2024-02-20 at 1 40 30 PM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/cea70e0b-1972-49f9-bc46-b22eeda854d1)
+
 
 If you wish to make changes to the ESPHome YAML configuration, you will additionally need to "Adopt" the device into your [ESPHome dashboard](https://esphome.io/guides/getting_started_hassio.html) to take over control of the device firmware.
 
@@ -159,6 +161,12 @@ max_power: 0.98
 ```
 
 This clamps the effective fan speed between 40% and 98% regardless of the fan percentage that is chosen in the UI. The fan speeds are effectively remapped. It is not recommended to change these values.
+
+The ```min_power``` value is increased to ```0.60``` when high speed compressor is enabled.
+
+# Diagnostics
+
+A single diagnostics sensor is created in Home Assistant: ```Blower Speed```. Though this is not feedback from the blower itself, it represents the actual fan percentage the blower should be working at based on all factors including fan mode (Low, Medium, High) and at which speed the compressor is running.
 
 # Pinouts
 
