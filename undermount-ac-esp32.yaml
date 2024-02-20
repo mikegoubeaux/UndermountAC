@@ -236,22 +236,24 @@ sensor:
             return 0.0;
           }
 
-switch:
   # compressor on/off
   - platform: gpio
     id: air_cond
-    pin: 8
+    pin:
+      number: 8
+      inverted: true
+    restore_mode: ALWAYS_OFF
     internal: true
-    inverted: true
 
   # compressor high speed on/off
   - platform: gpio
-    pin: 10
+    pin:
+      number: 10
+      inverted: true
     name: Compressor High Speed
     id: compressor_speed_high
-    inverted: true
     internal: true
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: ALWAYS_OFF
     on_turn_on:
       # set minimum fan speed to 60% when compressor is on high
       - lambda: id(blower_pwm).set_min_power(0.60);
