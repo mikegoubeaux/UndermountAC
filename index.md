@@ -67,7 +67,8 @@ In ESPHome two switch entities are created and exposed to the Home Assistant fro
 Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and clicked "Configure" on the newly discovered device in **Settings -> Devices & Services** in [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
 
 ![Screenshot 2024-02-05 at 9 57 34 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/16ae24cd-9ffa-4505-9cf9-c2d04e9b7c10)
-![Screenshot 2024-02-20 at 1 40 30 PM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/cea70e0b-1972-49f9-bc46-b22eeda854d1)
+![Screenshot 2024-02-20 at 3 59 39 PM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/1cd0ab13-c16f-4475-bf94-36275efdc2f5)
+
 
 
 If you wish to make changes to the ESPHome YAML configuration, you will additionally need to "Adopt" the device into your [ESPHome dashboard](https://esphome.io/guides/getting_started_hassio.html) to take over control of the device firmware.
@@ -90,14 +91,20 @@ Steady Orange - Thermostat Off (System in Standby)
 
 ## High Compressor Speed
 
-The compressor has a high speed that can be selectively engaged. In this configuration, the compressor is set to high under two conditions:
+The compressor has a high speed that can be engaged. In this configuration, the compressor is set to high under either of two conditions:
 
 - When the system has been cooling for over 30 minutes
 - When the delta between the target temp and current temp is greater than 5 °C
 
+But only if:
+
+- ```Supplemental Cooling Enabled``` switch is turned on in the Home Assistant front end
+
+If you want to disable the compressor's high speed mode, simply turn off the ```Supplemented Cooling Enabled``` switch in the Home Assistant front end. **Note**: Turning the switch on does not immediately set the compressor to high speed, it simply allows supplemental cooling to behave as noted above.
+
 The compressor speed is reset to low once the target temperature is reached or if the AC is turned off.
 
-These settings can be modified under the Climate Component:
+The supplemental cooling configuration settings can be modified under the Climate Component:
 ```
 max_cooling_run_time: 30min
 supplemental_cooling_delta: 5
