@@ -66,8 +66,7 @@ In ESPHome two switch entities are created and exposed to the Home Assistant fro
 
 Once you've installed the firmware on your [Controller](https://undermountac.com/pages/hass) and clicked "Configure" on the newly discovered device in **Settings -> Devices & Services** in [Home Assistant](https://www.home-assistant.io), a [climate entity](https://esphome.io/components/climate/) will be added to Home Assistant for full control of your Undermount AC system.
 
-![Screenshot 2024-02-05 at 9 57 34 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/16ae24cd-9ffa-4505-9cf9-c2d04e9b7c10)
-![Screenshot 2024-02-20 at 3 59 39 PM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/1cd0ab13-c16f-4475-bf94-36275efdc2f5)
+![Screenshot 2024-02-23 at 11 22 51 AM](https://github.com/mikegoubeaux/UndermountAC/assets/9661510/abe923d4-0df9-4ac1-b00f-c984caf6478b)
 
 
 
