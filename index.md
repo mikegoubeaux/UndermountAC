@@ -98,9 +98,9 @@ The compressor has a high speed that can be engaged. In this configuration, the 
 
 But only if:
 
-- ```Supplemental Cooling Enabled``` switch is turned on in the Home Assistant front end
+- ```Allow Supplemental``` switch is turned on in the Home Assistant front end
 
-If you want to disable the compressor's high speed mode, simply turn off the ```Supplemented Cooling Enabled``` switch in the Home Assistant front end. **Note**: Turning the switch on does not immediately set the compressor to high speed, it simply allows supplemental cooling to behave as noted above.
+If you want to disable the compressor's high speed mode, simply turn off the ```Allow Supplemental``` switch in the Home Assistant front end. **Note**: Turning the switch on does not immediately set the compressor to high speed, it simply allows supplemental cooling to behave as noted above.
 
 The compressor speed is reset to low once the target temperature is reached or if the AC is turned off.
 
@@ -110,6 +110,13 @@ max_cooling_run_time: 30min
 supplemental_cooling_delta: 5
 ```
 
+### Compressor Manual Control
+
+If you wish to have full manual control over the compressor speed, there is a switch entity hidden by default called: ```Compressor High Speed```. You can enable this switch in the Home Assistant front end by going to settings -> Devices & Services -> ESPHome -> UndermountAC.
+
+**Note:** This switch allows you to immediately enable or disable the compressor high speed. If ```Allow Supplemental``` is turned on, the system will engage and disengage the compressor's high speed according the hysteresis above. If you do NOT want the compressor to engage and disengage high speed automatically, simply turn off ```Allow Supplemental``` and use this ```Compressor High Speed``` switch for manual control. To protect the equipment, minimum fan speeds are always controlled by the device and are affected by the speed of the compressor.
+
+
 ## Temperature / Humidity Sensor
 
 By default, the provided configuration uses the included 1 meter SHT30 Temperature and Humidity sensor as the current temperature for the Climate Componenent. Both temperature and humidty are exposed to Home Assistant as entites for use in the frontend/automations/etc. 
@@ -118,22 +125,26 @@ Optionally, a Home Assistant temperature sensor can be [imported into ESPHome](h
 
 ## Fan
 
-By default the Fan entity is hidden from the Home Assistant frontend. It is recommended to simply use the the Climate Component which has preset fan speeds of Low, Medium, High, and Auto. **Auto** chooses fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets.
+By default the Fan entity is dissabled in the Home Assistant frontend. It is recommended to simply use the the Climate Component which has preset fan speeds of Low, Medium, High, and Auto. **Auto** chooses fan speed based on the delta of temperature set point and current temperature for a hands-off experience. Fan speeds can also be included in Climate presets. Minimum fan speeds are always governed by this configuration to protect the equipment.
 
-If you want to have granular control over the fan, change the following configuration variable in the Fan component:
-```
-internal: false
-```
-This will provide a fan entity to the Home Assistant frontend for full control of the UndermountAC blower. Please note that fan speed percentages are remapped from 40-98% if the compressor is on low speed and 60-98% if the compressor is running at normal speed to protect your evaporator. If your Fan mode is set to Auto, this will override manual control of the fan.
+### Fan Speeds
+Please note that fan speeds are remapped to protect the equipment. Below are the minimum and maximum speeds the fan is mapped to under various conditions:
 
-## Fan Only Mode
-
-The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in the Home Assistant frontend. This is currenlty configured to act as a manual fan control for ventilation. You can choose Low, Medium, High and the fan will run at that speed regardless of the set point. However, if you choose Auto the controller will choose the fan speed based on the set point tempurature, but will not turn off. If your set point has been reached, the fan will stay at the lowest speed.
-
-If you'd rather the fan be used as a cooling fan (at any speed) - activating only when the setpoint has not been reached - add this configuration variable to the Climate entity:
 ```
-fan_only_cooling: true
+Mode - Cool - Compressor low: min 40% - max 98%
+Mode - Cool - Compressor high: min 60% - max 98%
+Mode - Fan Only: min 5% - max 98%
+Mode - Off: min 5% - max 100% (allows for full manaul fan control)
 ```
+
+### Fan Only Mode
+
+The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in the Home Assistant frontend to allow for ventilation. The fan will behave just as it would in Cool mode. If the set point is reached, the fan will be turned off. You can still use all of the fan speeds.
+
+### Manual Fan Control
+
+If you want manual control of the fan, enable the ```AC Blower``` entity in the Home Assistant front end. This will add a fan entity to the Home Assistant frontend for full control of the Undermount AC blower. Keep in mind that if the thermostat mode is **Cool** or **Fan-only**, the fan will be affected by the climate controls. For true manual control of the fan, simply set the Undermount AC thermostat mode to **Off** and control the fan using the fan entity in the Home Assistant front end.
+
 
 ## Climate Presets
 
@@ -162,14 +173,7 @@ Both of these Climate Control configuration variables should be set to a minimum
 
 **Fan Speed Output**
 
-```
-min_power: 0.40
-max_power: 0.98
-```
-
-This clamps the effective fan speed between 40% and 98% regardless of the fan percentage that is chosen in the UI. The fan speeds are effectively remapped. It is not recommended to change these values.
-
-The ```min_power``` value is increased to ```0.60``` when high speed compressor is enabled.
+The various fan speed limits are detailed above. Any fan speed value set via the UI is remapped to the values above. So, the Low fan setting has a different actual fan speed depending on compressor speed, etc. 
 
 # Diagnostics
 
