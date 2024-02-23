@@ -52,7 +52,6 @@ captive_portal:
 # and git url for the dashboard_import
 ##########################################################
 
-
 # Sets up the improv via serial client for Wi-Fi provisioning.
 # Handy if your device has a usb port for the user to add credentials when they first get it.
 improv_serial:
@@ -99,8 +98,301 @@ light:
           min_brightness: 40%
           max_brightness: 60%
 
-# Update the Status Light
+
+
+output:
+  # output to use ESPHome status_led with ESP32-S3 onboard addressable LED
+  - platform: template
+    id: statusoutput
+    type: binary
+    write_action:
+      - if:
+          condition:
+             lambda: return state > 0;
+          then:
+            - light.turn_on: 
+                id: statusledlight
+                effect: "Not Connected"
+          else:
+            - light.turn_off: 
+                id: statusledlight
+  # Fan Blower PWM output
+  - platform: ledc
+    pin: 7
+    id: blower_pwm
+    power_supply: fan_voltage
+    # clamp fan values between 40% and 98% per UndermountAC
+    min_power: 0.40
+    max_power: 0.98
+    zero_means_zero: true # set fan all the way to 0 when off
+
+# output pin for fan voltage - is managed by the Fan PWM output
+power_supply:
+  - id: fan_voltage
+    pin: 
+      number: 9
+      inverted: true
+
+# i2c bus for onboard temp/humidity sensor
+i2c:
+  sda: GPIO21
+  scl: GPIO14
+  scan: true
+  id: bus_a
+
+sensor:
+  
+  # onboard SHT30 temp/humidity sensor
+  - platform: sht3xd
+    i2c_id: bus_a
+    id: onboard_temp_sensor
+    temperature:
+      name: "UndermountAC Temperature"
+    humidity:
+      name: "UndermountAC Humidity"
+    update_interval: 30s
+
+  # fan speed diagnostics sensor
+  - platform: template
+    id: fan_speed_diagnostic
+    name: Blower Speed
+    accuracy_decimals: 0
+    unit_of_measurement: "%"
+    device_class: ""
+    entity_category: "diagnostic"
+    icon: mdi:fan
+    filters:
+      # simulate clamped fan speed values 
+      - lambda: |-
+          if(id(blower_fan).state) {
+            return ((x * .01) * (id(blower_pwm).get_max_power() - id(blower_pwm).get_min_power()) + id(blower_pwm).get_min_power()) * 100;
+          } else {
+            return 0.0;
+          }
+            
+
+switch:
+  # compressor on/off
+  - platform: gpio
+    id: air_cond
+    pin:
+      number: 8
+      inverted: true
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+  # compressor high speed on/off
+  - platform: gpio
+    pin:
+      number: 10
+      inverted: true
+    name: Compressor High Speed
+    id: compressor_speed_high
+    internal: false
+    restore_mode: ALWAYS_OFF
+    disabled_by_default: true
+    on_turn_on:
+      # set minimum fan speed to 70% when compressor is on high
+      - lambda: id(blower_pwm).set_min_power(0.60);
+      - script.execute: update_fan_speed
+      - script.execute: status_light_update
+    on_turn_off:
+      # set minimum fan speed to 40% when compressor is on low
+      - lambda: id(blower_pwm).set_min_power(0.40);
+      - script.execute: update_fan_speed
+      - script.execute: status_light_update
+
+  # output 5
+  - platform: gpio
+    pin: 20
+    id: output_5
+    name: Output 5
+    disabled_by_default: true
+
+  # output 6
+  - platform: gpio
+    pin: 19
+    id: output_6
+    name: Output 6
+    disabled_by_default: true
+
+  # supplemental cooling enabled - when off, this prevents the compressor from running on high
+  - platform: template
+    id: supplemental_enabled
+    name: Allow Supplemental
+    icon: mdi:speedometer
+    restore_mode: RESTORE_DEFAULT_OFF
+    optimistic: true
+
+fan:
+  - platform: speed
+    name: "Blower"
+    output: blower_pwm
+    id: blower_fan
+    disabled_by_default: true
+    on_turn_off:
+      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
+    on_speed_set:
+      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
+  
+
+climate:
+  - platform: thermostat
+    name: "Air Conditioning"
+    id: this_thermostat
+    sensor: onboard_temp_sensor
+    visual:
+      temperature_step: 1.0
+      min_temperature: 50 °F
+      max_temperature: 85 °F
+
+    # these are the recommended values from UndermountAC
+    min_cooling_off_time: 2min # should be no less than "2min"
+    min_cooling_run_time: 2min # should be no less than "2min" to avoid short cycling
+    min_idle_time: 5s # may not really be necessary in a cooling only thermostat and the above settings
+    min_fanning_off_time: 30s
+    min_fanning_run_time: 30s
+    
+    # actions for each thermostat state - manage the call for ac, compressor speed, and fan on/of
+    cool_action:
+      # set min and max fan speeds for normal operation - to protect equipment
+      - lambda: id(blower_pwm).set_min_power(0.40);
+      - lambda: id(blower_pwm).set_max_power(0.98);
+      - switch.turn_on: air_cond
+      - delay: 20s
+      - fan.turn_on: blower_fan
+    idle_action:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      - lambda: id(blower_pwm).set_max_power(0.50); # ramp down fan
+      - delay: 20s # delay before turning fan off to push out any final cold air
+      - fan.turn_off: blower_fan
+    fan_only_action:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      # set min and max fan speeds to wider range
+      - lambda: id(blower_pwm).set_min_power(0.05);
+      - lambda: id(blower_pwm).set_max_power(0.98);
+      - fan.turn_on: blower_fan
+    off_mode:
+      - switch.turn_off: air_cond
+      - switch.turn_off: compressor_speed_high
+      - delay: 20s # delay before turning fan off to push out any final cold air
+      - fan.turn_off: blower_fan
+      # set min and max fan speeds to full range - in case fan is used by itself
+      - lambda: id(blower_pwm).set_min_power(0.05);
+      - lambda: id(blower_pwm).set_max_power(1.0);
+    
+    # turn the compressor to HIGH under these conditions:
+    max_cooling_run_time: 30min 
+    supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
+    supplemental_cooling_action:
+      - if:
+          condition:
+            - switch.is_on: supplemental_enabled
+          then:
+            - switch.turn_on: compressor_speed_high
+
+    # define presets here to use within HA
+    on_boot_restore_from: memory
+    # if no memory exists, will default to Standby preset
+    default_preset: Standby
+    preset:
+      - name: Home
+        default_target_temperature_high: 75 °F
+        fan_mode: AUTO
+        mode: cool
+      - name: Standby
+        default_target_temperature_high: 75 °F
+        fan_mode: AUTO
+        mode: "OFF"
+      - name: Sleep
+        default_target_temperature_high: 71 °F
+        fan_mode: low
+        mode: cool
+    
+    # fan modes are available in the Climate card in HA Frontend and can be called with "climate.set_fan_mode" in automations
+    # these speeds are mapped to the above clamped PWM output values so the fan will never go too low
+    min_fan_mode_switching_time: 5s # probably not needed - delays before changing fan speed
+    fan_only_cooling: true
+    fan_mode_low_action:
+      # placeholder action - as the fan is dealt with in the script block below
+      - logger.log: "Fan is in Low"
+
+    fan_mode_medium_action:
+      # placeholder action - as the fan is dealt with in the script block below
+      - logger.log: "Fan is on Medium"
+
+    fan_mode_high_action:
+      # placeholder action - as the fan is dealt with in the script block below
+      - logger.log: "Fan is on High"
+
+    fan_mode_auto_action:
+      # placeholder action - as the fan is dealt with in the script block below
+      - logger.log: "Fan is in Auto"
+
+    # when any state change occurs on the Thermostat
+    on_state:
+      - script.execute: update_fan_speed
+      - script.execute: status_light_update
+
+
 script:
+  # Update Fan Speed
+  - id: update_fan_speed
+    then:
+      - lambda: |-
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_AUTO) {
+            if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +3.5 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(100);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +3 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(80);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2.5 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(60);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(40);
+              call.perform();
+            }
+            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +0.5 ) {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(20);
+              call.perform();
+            }
+            else {
+              auto call = id(blower_fan).make_call();
+              call.set_speed(0);
+              call.perform();          
+            }
+          }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_LOW){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(0);
+              call.perform();
+          }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_MEDIUM){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(50);
+              call.perform();
+          }
+          if (id(this_thermostat).fan_mode == CLIMATE_FAN_HIGH){
+              auto call = id(blower_fan).make_call();
+              call.set_speed(100);
+              call.perform();
+          }
+      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
+      
+
+  # Update the Status Light
   - id: status_light_update
     then:
       # CLIMATE OFF - ORANGE
@@ -162,274 +454,5 @@ script:
                 green: 100%
                 blue: 100%
                 brightness: 40%
-                effect: "Pulse"  
+                effect: "Pulse"            
 
-
-output:
-  # output to use ESPHome status_led with ESP32-S3 onboard addressable LED
-  - platform: template
-    id: statusoutput
-    type: binary
-    write_action:
-      - if:
-          condition:
-             lambda: return state > 0;
-          then:
-            - light.turn_on: 
-                id: statusledlight
-                effect: "Not Connected"
-          else:
-            - light.turn_off: 
-                id: statusledlight
-  # Fan Blower PWM output
-  - platform: ledc
-    pin: 7
-    id: blower_pwm
-    power_supply: fan_voltage
-    # clamp fan values between 40% and 98% per UndermountAC
-    min_power: 0.40
-    max_power: 0.98
-    zero_means_zero: true # set fan all the way to 0 when off
-
-# output pin for fan voltage - is managed by the Fan PWM output
-power_supply:
-  - id: fan_voltage
-    pin:
-      number: 9
-      inverted: true
-
-# i2c bus for onboard temp/humidity sensor
-i2c:
-  sda: GPIO21
-  scl: GPIO14
-  scan: true
-  id: bus_a
-
-sensor:
-  # onboard SHT30 temp/humidity sensor
-  - platform: sht3xd
-    i2c_id: bus_a
-    id: onboard_sht30
-    temperature:
-      name: "UndermountAC Temperature"
-      id: onboard_temperature
-    humidity:
-      name: "UndermountAC Humidity"
-      id: onboard_humidity
-    update_interval: 30s
-  
-  # fan speed diagnostics sensor
-  - platform: template
-    id: fan_speed_diagnostic
-    name: Blower Speed
-    accuracy_decimals: 0
-    unit_of_measurement: "%"
-    device_class: ""
-    entity_category: "diagnostic"
-    icon: mdi:fan
-    filters:
-      # simulate clamped fan speed values 
-      - lambda: |-
-          if(id(blower_fan).state) {
-            return ((x * .01) * (id(blower_pwm).get_max_power() - id(blower_pwm).get_min_power()) + id(blower_pwm).get_min_power()) * 100;
-          } else {
-            return 0.0;
-          }
-
-switch:
-  # compressor on/off
-  - platform: gpio
-    id: air_cond
-    pin:
-      number: 8
-      inverted: true
-    restore_mode: ALWAYS_OFF
-    internal: true
-
-  # compressor high speed on/off
-  - platform: gpio
-    pin:
-      number: 10
-      inverted: true
-    name: Compressor High Speed
-    id: compressor_speed_high
-    internal: true
-    restore_mode: ALWAYS_OFF
-    on_turn_on:
-      # set minimum fan speed to 60% when compressor is on high
-      - lambda: id(blower_pwm).set_min_power(0.60);
-      - script.execute: status_light_update
-    on_turn_off:
-      # set minimum fan speed to 40% when compressor is on low
-      - lambda: id(blower_pwm).set_min_power(0.40);
-      - script.execute: status_light_update
-  
-  # output 5
-  - platform: gpio
-    pin: 20
-    id: output_5
-    name: Output 5
-
-  # output 6
-  - platform: gpio
-    pin: 19
-    id: output_6
-    name: Output 6
-
-  # supplemental cooling enabled - when off, this prevents the compressor from running on high
-  - platform: template
-    id: supplemental_enabled
-    name: Supplemental Cooling Enabled
-    icon: mdi:speedometer
-    restore_mode: RESTORE_DEFAULT_OFF
-    optimistic: true
-
-fan:
-  - platform: speed
-    name: "AC Blower"
-    output: blower_pwm
-    id: blower_fan
-    # using a Speed Fan here so Climate Thermostat can set fan speeds
-    # if you set "internal" to "true", the fan is only used internally and will not be exposed to Home Assistant
-    # you may want it exposed to HA if you want more granular control of the fan speed 
-    # (for safety it is already clamped to UndermountAC recommended speeds in the Output)
-    internal: true
-    on_turn_off:
-      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
-
-climate:
-  - platform: thermostat
-    name: "Air Conditioning"
-    id: this_thermostat
-    sensor: onboard_temperature
-    visual:
-      temperature_step: 1.0
-      min_temperature: 50 °F
-      max_temperature: 80 °F
-
-    # these are the recommended values from UndermountAC
-    min_cooling_off_time: 2min # should be no less than "2min"
-    min_cooling_run_time: 2min # should be no less than "2min" to avoid short cycling
-    min_idle_time: 2min # may not really be necessary in a cooling only thermostat and the above settings
-    min_fanning_off_time: 30s
-    min_fanning_run_time: 30s
-    
-    # actions for each thermostat state - manage the call for ac, compressor speed, and fan on/of
-    cool_action:
-      - switch.turn_on: air_cond
-      - delay: 20s
-      - fan.turn_on: blower_fan
-    idle_action:
-      - switch.turn_off: air_cond
-      - switch.turn_off: compressor_speed_high
-      - delay: 10s # delay before turning fan off to push out any final cold air
-      - fan.turn_off: blower_fan
-    fan_only_action:
-      - switch.turn_off: air_cond
-      - switch.turn_off: compressor_speed_high
-      - fan.turn_on: blower_fan
-    off_mode:
-      - switch.turn_off: air_cond
-      - switch.turn_off: compressor_speed_high
-      - delay: 10s # delay before turning fan off to push out any final cold air
-      - fan.turn_off: blower_fan
-    
-    # turn the compressor to HIGH under these conditions:
-    max_cooling_run_time: 30min # when cooling has been running for this long
-    supplemental_cooling_delta: 5 # when the delta between target temp and current temp is > than this value (appears to only work in °C)
-    supplemental_cooling_action:
-      - if:
-          condition:
-            - switch.is_on: supplemental_enabled
-          then:
-            - switch.turn_on: compressor_speed_high
-
-    # define presets here to use within HA
-    on_boot_restore_from: memory
-    # if no memory exists, will default to Standby preset
-    default_preset: Standby
-    preset:
-      - name: Home
-        default_target_temperature_high: 75 °F
-        fan_mode: AUTO
-        mode: cool
-      - name: Standby
-        default_target_temperature_high: 75 °F
-        fan_mode: AUTO
-        mode: "OFF"
-      - name: Sleep
-        default_target_temperature_high: 71 °F
-        fan_mode: low
-        mode: cool
-    
-    # fan modes are available in the Climate card in HA Frontend and can be called with "climate.set_fan_mode" in automations
-    # these speeds are mapped to the above clamped PWM output values so the fan will never go too low
-    min_fan_mode_switching_time: 5s # probably not needed - delays before changing fan speed
-    fan_mode_low_action:
-      # placeholder action - as the fan is dealt with in the "on_state" block below
-      - logger.log: "Fan is in Low"
-
-    fan_mode_medium_action:
-      # placeholder action - as the fan is dealt with in the "on_state" block below
-      - logger.log: "Fan is on Medium"
-
-    fan_mode_high_action:
-      # placeholder action - as the fan is dealt with in the "on_state" block below
-      - logger.log: "Fan is on High"
-
-    fan_mode_auto_action:
-      # placeholder action - as the fan is dealt with in the "on_state" block below
-      - logger.log: "Fan is in Auto"
-
-    # when any state change occurs on the Thermostat, set fan speed
-    on_state:
-      - lambda: |-
-          if (id(this_thermostat).fan_mode == CLIMATE_FAN_AUTO) {
-            if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +3 ) {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(100);
-              call.perform();
-            }
-            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2.5 ) {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(80);
-              call.perform();
-            }
-            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +2 ) {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(60);
-              call.perform();
-            }
-            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1.5 ) {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(40);
-              call.perform();
-            }
-            else if ( id(this_thermostat).current_temperature > id(this_thermostat).target_temperature +1 ) {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(20);
-              call.perform();
-            }
-            else {
-              auto call = id(blower_fan).make_call();
-              call.set_speed(0);
-              call.perform();          
-            }
-          }
-          if (id(this_thermostat).fan_mode == CLIMATE_FAN_LOW){
-              auto call = id(blower_fan).make_call();
-              call.set_speed(0);
-              call.perform();
-          }
-          if (id(this_thermostat).fan_mode == CLIMATE_FAN_MEDIUM){
-              auto call = id(blower_fan).make_call();
-              call.set_speed(50);
-              call.perform();
-          }
-          if (id(this_thermostat).fan_mode == CLIMATE_FAN_HIGH){
-              auto call = id(blower_fan).make_call();
-              call.set_speed(100);
-              call.perform();
-          }
-      - script.execute: status_light_update
-      - lambda: id(fan_speed_diagnostic).publish_state(id(blower_fan).speed);
