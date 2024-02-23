@@ -143,7 +143,7 @@ The Climate Thermostat can be put into "Fan Only" mode via the Climate Card in t
 
 ### Manual Fan Control
 
-If you want manual control of the fan, enable the ```AC Blower``` entity in the Home Assistant front end. This will add a fan entity to the Home Assistant frontend for full control of the Undermount AC blower. Keep in mind that if the thermostat mode is **Cool** or **Fan-only**, the fan will be affected by the climate controls. For true manual control of the fan, simply set the Undermount AC thermostat mode to **Off** and control the fan using the fan entity in the Home Assistant front end.
+If you want manual control of the fan, enable the ```Blower``` entity in the Home Assistant front end. This will add a fan entity to the Home Assistant frontend for full control of the Undermount AC blower. Keep in mind that if the thermostat mode is **Cool** or **Fan-only**, the fan will be affected by the climate controls. For true manual control of the fan, simply set the Undermount AC thermostat mode to **Off** and control the fan using the fan entity in the Home Assistant front end.
 
 
 ## Climate Presets
