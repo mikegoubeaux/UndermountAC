@@ -145,11 +145,13 @@ sensor:
   # onboard SHT30 temp/humidity sensor
   - platform: sht3xd
     i2c_id: bus_a
-    id: onboard_temp_sensor
+    id: onboard_sht30
     temperature:
       name: "UndermountAC Temperature"
+      id: onboard_temperature
     humidity:
       name: "UndermountAC Humidity"
+      id: onboard_humidity
     update_interval: 30s
 
   # fan speed diagnostics sensor
@@ -240,7 +242,7 @@ climate:
   - platform: thermostat
     name: "Air Conditioning"
     id: this_thermostat
-    sensor: onboard_temp_sensor
+    sensor: onboard_temperature
     visual:
       temperature_step: 1.0
       min_temperature: 50 °F
